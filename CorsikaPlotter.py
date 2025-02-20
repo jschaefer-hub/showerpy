@@ -258,7 +258,7 @@ class CorsikaPlotter:
                    vmax = colorbar_max,
                    cmap='binary',
         )
-        print(colorbar_max)
+        # print(colorbar_max)
         
         plt.gca().set_aspect('equal', adjustable='box') 
         return ax    

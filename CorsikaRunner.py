@@ -144,6 +144,16 @@ class CorsikaRunner():
 
     def run_simulation(self):
         
+        # Check if there are already output files in the current directory
+        # Ask the user if he wants to delete them or cancel the sim
+        if any(f.startswith("sim_") for f in os.listdir(".")):
+            message = """
+            Simulation files already present in working directory. Please 
+            delete or move them before simulating again. 
+            """
+            raise Exception(message)
+        
+        
         _current_path = os.getcwd()
         
         os.chdir(os.path.dirname(self.path_corsika_executable))
@@ -153,4 +163,6 @@ class CorsikaRunner():
         print(f"\nSimulation completed. Check {self.path_data_output}/corsika_output.log for details.")
         
         os.chdir(_current_path)
-        
+
+    
+                
