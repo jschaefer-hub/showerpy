@@ -1,0 +1,32 @@
+RUNNR {run_number}
+NSHOW 1
+*
+*
+{seeds}
+PRMPAR {primary_particle} 
+ERANGE {primary_energy} {primary_energy}
+THETAP {zenith_angle} {zenith_angle}
+PHIP 0. 360.
+*
+FIXHEI  0.  0 
+FIXCHI  0.
+MAGNET  11.930 -25.310       // Magnetic field (H, Zdown)
+ARRANG  -12.750
+*
+* [ Interaction flags and secondary particle energy limits. ]
+*
+ECUTS  0.3  0.1  0.020  0.020
+*ELMFLG  T T
+*MUADDI  F
+*MUMULT  T // Additional Muon information
+ELMFLG T T
+ATMOSPHERE  10 T
+*
+OBSLEV {observation_level}
+*ELMFLG T T // NKG/EGS4 options 
+PLOTSH T
+CERSIZ 1
+*
+TELESCOPE 0. 0. 0. 1000.E2 
+TELFIL {output_directory}cherenkov_iact
+DIRECT {output_directory}
