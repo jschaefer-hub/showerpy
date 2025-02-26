@@ -16,4 +16,4 @@ Then, open the demo notebook Demo.ipynb, which provides an introduction to using
 
 # Simulating Showers
 As demonstrated in the demo notebook, the CorsikaRunner class is used to generate the required simulations.
-If you are running the demo notebook on woodycap5 or woodycap6, the provided link to the CORSIKA executable points to a public installation, so no additional setup is required.
+If you are running the demo notebook on `woodycap5` or `woodycap6`, the provided link to the CORSIKA executable points to a public installation, so no additional setup is required.
