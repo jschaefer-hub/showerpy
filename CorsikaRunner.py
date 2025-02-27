@@ -1,36 +1,55 @@
-import random
 import os
+import random
 from astropy import units as u
-from attr import s
 
-class CorsikaRunner():
-    
-    def __init__(self, 
-                 path_corsika_executable, 
-                 path_input_card_template = 'input_template.inp', 
-                 path_data_output = os.getcwd()
+
+class CorsikaRunner:
+    """
+    A class to configure and run CORSIKA simulations.
+
+    Attributes:
+        path_corsika_executable (str): Path to the CORSIKA executable.
+        path_input_card_template (str): Path to the input card template.
+        path_data_output (str): Directory for simulation output data.
+        path_inputcard (str): Path where the filled input card will be stored.
+        current_config (dict): Stores current simulation parameters.
+        particle_map (dict): Maps particle names to CORSIKA particle IDs.
+    """
+
+    def __init__(
+        self,
+        path_corsika_executable,
+        path_input_card_template="input_template.inp",
+        path_data_output=None,
     ):
-        
+        """
+        Initializes the CorsikaRunner with paths to executables and input files.
+
+        Args:
+            path_corsika_executable (str): Path to the CORSIKA executable.
+            path_input_card_template (str, optional): Path to the input card template.
+                Defaults to "input_template.inp".
+            path_data_output (str, optional): Directory for simulation output data.
+                Defaults to the current working directory.
+        """
         self.path_corsika_executable = path_corsika_executable
         self.path_input_card_template = path_input_card_template
-        self.path_data_output = path_data_output
-        
-        self.path_inputcard = os.path.join(
-            path_data_output, 
-            'input_particletracks.inp'
-        )
-            
-        
+        self.path_data_output = path_data_output or os.getcwd()
+
+        # The filled-out input card is stored in the local directory
+        self.path_inputcard = os.path.join(self.path_data_output, "input_particletracks.inp")
+
+        # Default configuration
         self.current_config = {
-            "run_number" : 1,
-            "primary_particle" : None,
-            "primary_energy" : None,
+            "run_number": 1,
+            "primary_particle": None,
+            "primary_energy": None,
             "observation_level": None,
-            "zenith_angle": None,  
-            'seeds': None,        
+            "zenith_angle": None,
+            "seeds": None,
         }
-        
-        
+
+        # Mapping between CORSIKA particle ID and particle name
         self.particle_map = {
             "gamma": 1,
             "electron": 2,
@@ -62,107 +81,141 @@ class CorsikaRunner():
             "vanadium": 4723,
             "chromium": 4824,
             "manganese": 5125,
-            "iron": 5626
+            "iron": 5626,
         }
-           
-    def configure_run(self,  
-        primary_particle, 
-        primary_energy, 
-        observation_level = 0 *u.m,   
-        run_number = 1, 
-        zenith_angle = 0 *u.deg, 
-        random_seeds = True,
+
+    def configure_run(
+        self,
+        primary_particle,
+        primary_energy,
+        observation_level=0 * u.m,
+        run_number=1,
+        zenith_angle=0 * u.deg,
+        random_seeds=True,
     ):
-        
-        
-        self.current_config['run_number'] = int(run_number)
-        self.current_config['primary_particle'] = self._parse_particletype(
-            primary_particle
-        )
-        self.current_config['primary_energy'] = primary_energy.to(u.GeV)
-        self.current_config['zenith_angle'] = (zenith_angle.to(u.deg))
-        self.current_config['observation_level'] = observation_level.to(u.cm)
-        
-        if random_seeds:
-            self.current_config['seeds'] = self._generate_seeds()
-        else: 
-            self.current_config['seeds'] = '*' # Comment out seed to fix it
-            
+        """
+        Configures the simulation parameters for a CORSIKA run.
+
+        Args:
+            primary_particle (str): Name of the primary particle (e.g., "gamma", "proton").
+                Refer to `CorsikaRunner.particle_map` for valid options.
+            primary_energy (astropy.units.Quantity): Energy of the primary particle.
+            observation_level (astropy.units.Quantity, optional): Altitude of the observation level
+                above sea level. Defaults to `0 * u.m`.
+            run_number (int, optional): Identifier for the simulation run. Defaults to `1`.
+            zenith_angle (astropy.units.Quantity, optional): Zenith angle of the incident primary particle.
+                Defaults to `0 * u.deg`.
+            random_seeds (bool, optional): If `True`, the showers are generated with random seeds.
+                Defaults to `True`.
+
+        Returns:
+            int: Always returns `0` to indicate successful configuration.
+        """
+        self.current_config["run_number"] = int(run_number)
+        self.current_config["primary_particle"] = self._parse_particletype(primary_particle)
+        self.current_config["primary_energy"] = primary_energy.to(u.GeV)
+        self.current_config["zenith_angle"] = zenith_angle.to(u.deg)
+        self.current_config["observation_level"] = observation_level.to(u.cm)
+
+        # Generate random seed if enabled
+        self.current_config["seeds"] = self._generate_seeds() if random_seeds else "*"
+
         self._generate_inputcard()
-        
+
         return 0
-    
+
     def _generate_inputcard(self):
-        
-         # Read the template file
+        """
+        Populates the input card template with the user-provided configuration,
+        saves it to disk, and returns the output as a string.
+
+        Returns:
+            str: The formatted input card content.
+        """
         with open(self.path_input_card_template, "r") as f:
             template_content = f.read()
-            
+
         # Replace placeholders
         template_content = template_content.format(
-            run_number = self.current_config['run_number'],
-            seeds = self.current_config['seeds'],
-            primary_particle = self.current_config['primary_particle'],
-            primary_energy = self.current_config['primary_energy'].value,
-            zenith_angle = self.current_config['zenith_angle'].value,
-            observation_level = self.current_config['observation_level'].value,
-            output_directory = os.path.join(
-                self.path_data_output,
-                'sim_'
-            )
+            run_number=self.current_config["run_number"],
+            seeds=self.current_config["seeds"],
+            primary_particle=self.current_config["primary_particle"],
+            primary_energy=self.current_config["primary_energy"].value,
+            zenith_angle=self.current_config["zenith_angle"].value,
+            observation_level=self.current_config["observation_level"].value,
+            output_directory=os.path.join(self.path_data_output, "sim_"),
         )
-        
-        
-        # Write to the output file
-        with open(self.path_inputcard , "w") as f:
-            f.write(template_content)
-            
-        return template_content
-            
-    def _parse_particletype(self, particle_name):
-        
-        # Normalize input (case insensitive)
-        particle_name = particle_name.lower().strip()
 
-        # Get the corresponding ID
-        particle_id = self.particle_map.get(particle_name, None)
-        
-        if particle_id == None: 
-            raise ValueError(f"Unknown primary particle name")
-            
-        return self.particle_map.get(particle_name, None)
-              
+        # Write to the output file
+        with open(self.path_inputcard, "w") as f:
+            f.write(template_content)
+
+        return template_content
+
+    def _parse_particletype(self, particle_name):
+        """
+        Converts a particle name to the corresponding CORSIKA particle ID.
+
+        Args:
+            particle_name (str): Particle name (e.g., "gamma", "proton").
+
+        Returns:
+            int: Corresponding CORSIKA particle ID.
+
+        Raises:
+            ValueError: If the particle name is not recognized.
+        """
+        particle_name = particle_name.lower().strip()
+        particle_id = self.particle_map.get(particle_name)
+
+        if particle_id is None:
+            raise ValueError(f"Unknown primary particle name: '{particle_name}'")
+
+        return particle_id
+
     def _generate_seeds(self):
-        # Generate unique SEED values
-        seed_min, seed_max = 10**7, 10**9  
-        second_number_min, second_number_max = 100, 1000  
-        seeds = "\n".join([
-            f"SEED    {random.randint(seed_min, seed_max)}    {random.randint(second_number_min, second_number_max)}    0     seed for random number sequence {i+1}"
+        """
+        Generates a set of random seeds for the different RNGs in CORSIKA.
+
+        Returns:
+            str: SEED definitions for the CORSIKA input card.
+        """
+        seed_min, seed_max = 10**7, 10**9
+        second_number_min, second_number_max = 100, 1000
+        seeds = "\n".join(
+            f"SEED    {random.randint(seed_min, seed_max)}    "
+            f"{random.randint(second_number_min, second_number_max)}    0     "
+            f"seed for random number sequence {i + 1}"
             for i in range(4)
-        ])
+        )
         return seeds
 
     def run_simulation(self):
-        
-        # Check if there are already output files in the current directory
-        # Ask the user if he wants to delete them or cancel the sim
-        if any(f.startswith("sim_") for f in os.listdir(".")):
-            message = """
-            Simulation files already present in working directory. Please 
-            delete or move them before simulating again. 
-            """
-            raise Exception(message)
-        
-        
-        _current_path = os.getcwd()
-        
-        os.chdir(os.path.dirname(self.path_corsika_executable))
-        
-        print("Starting CORSIKA simulation (This may take a few minutes)...")
-        os.system(f"{self.path_corsika_executable} < {self.path_inputcard} > {self.path_data_output}/corsika_output.log")
-        print(f"\nSimulation completed. Check {self.path_data_output}/corsika_output.log for details.")
-        
-        os.chdir(_current_path)
+        """
+        Calls the CORSIKA binary to run the simulation with user-defined parameters.
 
-    
-                
+        Raises:
+            Exception: If simulation files are already present in the working directory.
+        """
+        if any(f.startswith("sim_") for f in os.listdir(".")):
+            raise Exception(
+                "Simulation files already present in the working directory. "
+                "Please delete or move them before simulating again."
+            )
+
+        # Store the current working directory
+        _current_path = os.getcwd()
+
+        # Change to the CORSIKA binary directory
+        os.chdir(os.path.dirname(self.path_corsika_executable))
+
+        # Run the simulation
+        print("Starting CORSIKA simulation (this may take a few minutes)...")
+        os.system(
+            f"{self.path_corsika_executable} < {self.path_inputcard} > "
+            f"{self.path_data_output}/corsika_output.log"
+        )
+        print(f"\nSimulation completed. Check {self.path_data_output}/corsika_output.log for details.")
+
+        # Restore the original working directory
+        os.chdir(_current_path)
