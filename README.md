@@ -1,3 +1,4 @@
+![ShowerPy Logo](media/showerpy_logo.png)
 # Overview  
 
 **ShowerPy** is a set of Python classes that provides users with a simple interface to create single-shower CORSIKA simulations, extract full particle track information, and generate shower plots.  
