@@ -16,8 +16,8 @@ class CorsikaRunner():
         self.path_data_output = path_data_output
         
         self.path_inputcard = os.path.join(
-            os.path.dirname(self.path_corsika_executable), 
-            'sim_particletracks.inp'
+            path_data_output, 
+            'input_particletracks.inp'
         )
             
         
