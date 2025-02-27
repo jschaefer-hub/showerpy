@@ -5,6 +5,8 @@
 
 All data is available as pandas DataFrames, allowing you to create custom plots and perform detailed analysis.
 
+# Attribution 
+The ShowerPy classes use [pyeventio](https://github.com/cta-observatory/pyeventio) and [pycorsikaio](https://github.com/cta-observatory/pycorsikaio) to load the fortran files produced by CORSIKA. Further, the public woodycap installation uses CORSIKA 7.8000 (Released February 2025). For more information visit the [official website](https://www.iap.kit.edu/corsika/99.php). 
 # Getting Started  
 
 First, create and activate the `showerpy` mamba environment using the following commands:
@@ -12,7 +14,7 @@ First, create and activate the `showerpy` mamba environment using the following 
 mamba env create -f environment.yml
 mamba activate showerpy
 ```
-Then, open the demo notebook Demo.ipynb, which provides an introduction to using ShowerPy.
+Then, open the demo notebook `Demo.ipynb`, which provides an introduction to using ShowerPy.
 
 # Simulating Showers
 As demonstrated in the demo notebook, the CorsikaRunner class is used to generate the required simulations.
