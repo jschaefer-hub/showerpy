@@ -1,3 +1,12 @@
+# Do not track simulation files 
+sim_*
+test.ipynb 
+*.jpg
+*.pdf
+*.png 
+
+# Do not track filled out input templates 
+input_particletracks.inp
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
