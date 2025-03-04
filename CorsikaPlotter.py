@@ -203,10 +203,10 @@ class CorsikaPlotter:
         
          # Flip arrays to start from higher altitudes going down
         nparticles = np.flip(nparticles)
+        hasl = np.flip(hasl)
         
         # Begin Plot one step prior to when more than 10 particle are involved
         shower_start = hasl[np.argmax(nparticles > 10) - 1]
-        print(shower_start)
 
         if ax is None:
             _, ax = plt.subplots(figsize=(3, 8))
