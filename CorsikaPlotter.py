@@ -29,6 +29,41 @@ class CorsikaPlotter:
         self.path_data = path_data
         self.cherenkov_photons = None
         self.particle_tracks = None
+        
+        # Mapping between CORSIKA particle ID and particle name
+        self.particle_map = {
+            "gamma": 1,
+            "electron": 2,
+            "positron": 3,
+            "muon": 5,
+            "antimuon": 6,
+            "proton": 14,
+            "helium": 402,
+            "lithium": 703,
+            "beryllium": 904,
+            "boron": 1105,
+            "carbon": 1206,
+            "nitrogen": 1407,
+            "oxygen": 1608,
+            "fluorine": 1909,
+            "neon": 2010,
+            "sodium": 2311,
+            "magnesium": 2412,
+            "aluminium": 2713,
+            "silicon": 2814,
+            "phosphorus": 3115,
+            "sulfur": 3216,
+            "chlorine": 3517,
+            "argon": 3618,
+            "potassium": 3919,
+            "calcium": 4020,
+            "scandium": 4321,
+            "titanium": 4422,
+            "vanadium": 4723,
+            "chromium": 4824,
+            "manganese": 5125,
+            "iron": 5626,
+        }
 
         # Dictionary to store full paths of available files
         self.file_paths = {
@@ -185,13 +220,15 @@ class CorsikaPlotter:
 
         return particle_tracks_df
 
-    def plot_side_profile(self, ax=None, alpha=0.1):
+    def plot_side_profile(self, ax=None, alpha=0.1, color_dict=None):
         """
-        Plots a side profile of the particle tracks.
+        Plots a side profile of the particle tracks with optional color coding.
 
         Args:
             ax (matplotlib.axes.Axes, optional): Axis object to plot on. Defaults to None.
-            alpha (float, optional): Transparency level for plotted tracks.
+            alpha (float, optional): Transparency level for plotted tracks. Defaults to 0.1.
+            color_dict (dict, optional): Dictionary mapping particle names to colors.
+                Example: {"proton": "red", "electron": "blue"}.
 
         Returns:
             matplotlib.axes.Axes: The axis containing the plot.
@@ -201,29 +238,71 @@ class CorsikaPlotter:
             self.particle_tracks["z_start"] * 1e-5, bins=np.arange(0, 40, 1)
         )
         
-         # Flip arrays to start from higher altitudes going down
+        # Flip arrays to start from higher altitudes going down
         nparticles = np.flip(nparticles)
         hasl = np.flip(hasl)
         
-        # Begin Plot one step prior to when more than 10 particle are involved
+        # Begin Plot one step prior to when more than 10 particles are involved
         shower_start = hasl[np.argmax(nparticles > 10) - 1]
 
         if ax is None:
             _, ax = plt.subplots(figsize=(3, 8))
 
-        # To speed up plotting, we create a line segment collection and plot 
-        # all of them at once without a loop
-        segments = np.array([
-            [[row["x_start"] * 1e-5, row["z_start"] * 1e-5],
-             [row["x_end"] * 1e-5, row["z_end"] * 1e-5]]
-            for _, row in self.particle_tracks.iterrows()
-        ])
+        # If no color dictionary is provided, plot all particles in black
+        if color_dict is None:
+            color_dict = {}
 
-        ax.add_collection(LineCollection(segments, color="black", alpha=alpha, linewidth=0.08))
+        legend_handles = []
+        colored_particle_ids = []
+        # Iterate over the provided colors and plot those separately
+        for particle_name, color in color_dict.items():
+            if particle_name not in self.particle_map:
+                print(f"Warning: Unknown particle type '{particle_name}', skipping.")
+                continue
+            
+            particle_id = self.particle_map[particle_name]
+            colored_particle_ids.append(colored_particle_ids)
+            
+            subset = self.particle_tracks[self.particle_tracks["particle_id"] == particle_id]
+            
+            if subset.empty:
+                continue
+            
+            segments = np.array([
+                [[row["x_start"] * 1e-5, row["z_start"] * 1e-5],
+                [row["x_end"] * 1e-5, row["z_end"] * 1e-5]]
+                for _, row in subset.iterrows()
+            ])
+            
+            ax.add_collection(LineCollection(
+                segments, color=color, alpha=alpha, linewidth=0.2, label=particle_name, zorder=2
+            ))
+            
+            # Add solid color line for legend
+            legend_handles.append(plt.Line2D([0], [0], color=color, lw=2, label=particle_name))
+        
+        # All other particle types segments will be shown in black
+        filtered_df = self.particle_tracks[~self.particle_tracks["particle_id"].isin(colored_particle_ids)].copy()
+        all_segments = np.array([
+            [[row["x_start"] * 1e-5, row["z_start"] * 1e-5],
+            [row["x_end"] * 1e-5, row["z_end"] * 1e-5]]
+            for _, row in filtered_df.iterrows()
+        ])
+        ax.add_collection(LineCollection(
+            all_segments, color="black", alpha=alpha, linewidth=0.08, zorder=1
+        ))
+
+        
+        # Set plot limits and add legend
+        ax.set_ylim(0, shower_start)
+        if legend_handles:
+            ax.legend(handles=legend_handles)
+        
+        # Set plot limits and add legend
         ax.set_ylim(0, shower_start)
 
         return ax
-
+        
     def plot_cher_distribution(self, ax=None, nbins=1000, vmax=None):
         """
         Plots the Cherenkov photon distribution on the observation level.
