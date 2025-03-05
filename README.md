@@ -20,3 +20,58 @@ Then, open the demo notebook `Demo.ipynb`, which provides an introduction to usi
 # Simulating Showers
 As demonstrated in the demo notebook, the CorsikaRunner class is used to generate the required simulations.
 If you are running the demo notebook on `woodycap5` or `woodycap6`, the provided link to the CORSIKA executable points to a public installation, so no additional setup is required.
+
+# Compiling CORSIKA 
+
+If you want to simulate showers locally, please first [register as a new CORSIKA user](https://www.iap.kit.edu/corsika/79.php). After registering, you will receive login credentials to download CORSIKA. Once downloaded, unpack the archive using:
+
+```shell
+tar -xzf corsika*
+```
+
+## Installing Dependencies
+
+To compile CORSIKA, you need to install [GFortran](https://fortran-lang.org/learn/os_setup/install_gfortran/) on your machine.
+
+## Running the Configuration Tool
+
+In the root of the extracted directory, run the following command:
+```shell
+./coconut -e
+```
+(The `-e` flag enters expert mode.)
+
+You will then be prompted for different compile-time options. Select the following options in order, pressing *Enter* after each selection:
+
+1. **Compiler Selection:** `2` (compiler default)
+2. **High-Energy Hadronic Interaction Model:** `3` (QGSJETIII-01)
+3. **Low-Energy Hadronic Interaction Model:** `3` (URQMD 1.3cr)
+4. **Detector Geometry:** `2` (non-flat volume detector geometry)
+5. **Date and time routine:** `1` (automatic detection by configure)
+
+## Enabling Additional CORSIKA Program Options
+
+Next, you will arrive at the selection for additional CORSIKA program options. Type the string into the prompt:
+```text
+1b 8a 9a
+```
+These will configure the use of Konrad Bernlöhr's IACT routines (1b), the compilation of the PLOTSH script (8a), and the use of an external atmosphere profile (9a). 
+
+You will then proceed to configure these options:
+
+1. **Particles at detector level not stored in IACT file:** `1`
+2. **Photons counted only in step where emitted:** `1`
+3. **Emission angle depending on wavelength:** `2`
+
+After this, press *Enter* to compile the `plottracks` script (`PLOTSH`). 
+
+Then, press *Enter* again and confirm with `yes` to accept the selected CORSIKA program options.
+
+## Compilation
+
+Finally, to begin the compilation process select `f` and press *Enter* again. 
+
+To test the successful compilation you can execute the binary `./run/corsika78000Darwin_QGSIII_urqmd`. If you are greeted with the CORSIKA message, everything has compiled successfully. 
+
+## Atmospheric profile 
+You will also need the atmospheric profile file `atmprof10.dat`. This file is available to [H.E.S.S. members](https://www.mpi-hd.mpg.de/hfm/~bernlohr/HESS/) and [CTA members](https://www.mpi-hd.mpg.de/hfm/CTA/MC/). Please use the standard login.
