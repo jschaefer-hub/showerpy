@@ -1,7 +1,7 @@
 import os
 import random
 from astropy import units as u
-
+import uuid
 
 class CorsikaRunner:
     """
@@ -10,7 +10,6 @@ class CorsikaRunner:
     Attributes:
         path_corsika_executable (str): Path to the CORSIKA executable.
         path_input_card_template (str): Path to the input card template.
-        path_data_output (str): Directory for simulation output data.
         path_inputcard (str): Path where the filled input card will be stored.
         current_config (dict): Stores current simulation parameters.
         particle_map (dict): Maps particle names to CORSIKA particle IDs.
@@ -20,7 +19,6 @@ class CorsikaRunner:
         self,
         path_corsika_executable,
         path_input_card_template="input_template.inp",
-        path_data_output=None,
     ):
         """
         Initializes the CorsikaRunner with paths to executables and input files.
@@ -34,10 +32,10 @@ class CorsikaRunner:
         """
         self.path_corsika_executable = path_corsika_executable
         self.path_input_card_template = path_input_card_template
-        self.path_data_output = path_data_output or os.getcwd()
+        self.temp_output_dir = None
 
         # The filled-out input card is stored in the local directory
-        self.path_inputcard = os.path.join(self.path_data_output, "input_particletracks.inp")
+        self.path_inputcard = os.path.join(os.getcwd(), "input_particletracks.inp")
 
         # Default configuration
         self.current_config = {
@@ -47,6 +45,7 @@ class CorsikaRunner:
             "observation_level": None,
             "zenith_angle": None,
             "seeds": None,
+            "path_output": None
         }
 
         # Mapping between CORSIKA particle ID and particle name
@@ -92,6 +91,7 @@ class CorsikaRunner:
         run_number=1,
         zenith_angle=0 * u.deg,
         random_seeds=True,
+        path_output=None
     ):
         """
         Configures the simulation parameters for a CORSIKA run.
@@ -116,6 +116,7 @@ class CorsikaRunner:
         self.current_config["primary_energy"] = primary_energy.to(u.GeV)
         self.current_config["zenith_angle"] = zenith_angle.to(u.deg)
         self.current_config["observation_level"] = observation_level.to(u.cm)
+        self.current_config["path_output"] = path_output or os.getcwd()
 
         # Generate random seed if enabled
         self.current_config["seeds"] = self._generate_seeds() if random_seeds else "*"
@@ -135,6 +136,15 @@ class CorsikaRunner:
         with open(self.path_input_card_template, "r") as f:
             template_content = f.read()
 
+        # Generates a unique random folder name to store files in the 
+        # CORSIKA directory
+        # Note: we cannot directly save to the target directory as 
+        # CORSIKA has a limit to the maximum number of characters in a path
+        # We first save things in a random directory and copy it back to the 
+        # user defined path after the simulation as finished
+        self.temp_output_dir = str(uuid.uuid4()) 
+        
+        
         # Replace placeholders
         template_content = template_content.format(
             run_number=self.current_config["run_number"],
@@ -143,7 +153,7 @@ class CorsikaRunner:
             primary_energy=self.current_config["primary_energy"].value,
             zenith_angle=self.current_config["zenith_angle"].value,
             observation_level=self.current_config["observation_level"].value,
-            output_directory=os.path.join(self.path_data_output, "sim_"),
+            output_directory=os.path.join(f'./{self.temp_output_dir}/', "sim_"),
         )
 
         # Write to the output file
@@ -197,11 +207,6 @@ class CorsikaRunner:
         Raises:
             Exception: If simulation files are already present in the working directory.
         """
-        if any(f.startswith("sim_") for f in os.listdir(".")):
-            raise Exception(
-                "Simulation files already present in the working directory. "
-                "Please delete or move them before simulating again."
-            )
 
         # Store the current working directory
         _current_path = os.getcwd()
@@ -209,13 +214,34 @@ class CorsikaRunner:
         # Change to the CORSIKA binary directory
         os.chdir(os.path.dirname(self.path_corsika_executable))
 
+        # Make sure the temporary directory exists
+        os.makedirs(self.temp_output_dir, exist_ok=True)  # Create the folder
+        
         # Run the simulation
         print("Starting CORSIKA simulation (this may take a few minutes)...")
         os.system(
             f"{self.path_corsika_executable} < {self.path_inputcard} > "
-            f"{self.path_data_output}/corsika_output.log"
+            f"{os.path.join(self.temp_output_dir, "corsika_output.log")}"
         )
-        print(f"\nSimulation completed. Check {self.path_data_output}/corsika_output.log for details.")
+        
+        print('Simulation has completed')
+        print('\t-> Copying files to user directory')
+        
 
         # Restore the original working directory
         os.chdir(_current_path)
+        
+        # Make sure the user output directory exists
+        os.makedirs(self.current_config["path_output"], exist_ok=True)  # Create the folder
+        
+        # Copy over files from temp directory to user-specified one 
+        _path_tmp_dir = os.path.join(os.path.dirname(self.path_corsika_executable), self.temp_output_dir)
+        os.system(
+            f"cp {_path_tmp_dir}/* {self.current_config["path_output"]}"
+        )
+        
+        print('\t-> Cleanup temporary working directory')
+        os.system(
+            f"rm -rf {_path_tmp_dir}"
+        )
+        
