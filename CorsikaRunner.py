@@ -203,9 +203,6 @@ class CorsikaRunner:
     def run_simulation(self):
         """
         Calls the CORSIKA binary to run the simulation with user-defined parameters.
-
-        Raises:
-            Exception: If simulation files are already present in the working directory.
         """
 
         # Store the current working directory
