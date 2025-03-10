@@ -214,7 +214,7 @@ class CorsikaPlotter:
             if not tracks:
                 continue
 
-            # Form a pandas dataframe and disgard nan entries
+            # Form a pandas dataframe and discard nan entries
             temp_df = pd.DataFrame(tracks, columns=columns).dropna(axis=1, how="all")
             particle_tracks_df = pd.concat([particle_tracks_df, temp_df], ignore_index=True)
 
@@ -318,7 +318,7 @@ class CorsikaPlotter:
         if ax is None:
             _, ax = plt.subplots(figsize=(5, 5))
 
-        # Calculate a guestimate for correct colorbar scale based on 
+        # Calculate a guestimate for correct color-bar scale based on 
         # percentile containment
         if not vmax:
             # Create preliminary histogram to get photon distribution on 2D plane
