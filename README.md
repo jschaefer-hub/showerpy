@@ -18,8 +18,7 @@ mamba activate showerpy
 Then, open the demo notebook `Demo.ipynb`, which provides an introduction to using ShowerPy.
 
 # Simulating Showers
-As demonstrated in the demo notebook, the CorsikaRunner class is used to generate the required simulations.
-If you are running the demo notebook on `woodycap5` or `woodycap6`, the provided link to the CORSIKA executable points to a public installation, so no additional setup is required.
+As shown in the demo notebook, the `CorsikaRunner` class is used to generate the necessary simulations. If you’re running the demo on `woodycap5` or `woodycap6`, no additional setup is required, as the CORSIKA executable points to a public installation.
 
 # Compiling CORSIKA 
 
@@ -44,14 +43,15 @@ In the root of the extracted directory, run the following command:
 You will then be prompted for different compile-time options. Select the following options in order, pressing *Enter* after each selection:
 
 1. **Compiler Selection:** `2` (compiler default)
-2. **High-Energy Hadronic Interaction Model:** `3` (QGSJETIII-01)
+2. **High-Energy Hadronic Interaction Model:** `3` (QGSJETIII-01)<br>
+**->** You can also switch to a different model depending on your use case. Please note that when using EPOS, a modification to the input_template is required.
 3. **Low-Energy Hadronic Interaction Model:** `3` (URQMD 1.3cr)
 4. **Detector Geometry:** `2` (non-flat volume detector geometry)
 5. **Date and time routine:** `1` (automatic detection by configure)
 
 ## Enabling Additional CORSIKA Program Options
 
-Next, you will arrive at the selection for additional CORSIKA program options. Type the string into the prompt:
+Next, you will arrive at the selection for additional CORSIKA program options. Please type the following string into the prompt:
 ```text
 1b 8a 9a
 ```
@@ -66,6 +66,9 @@ You will then proceed to configure these options:
 After this, press *Enter* to compile the `plottracks` script (`PLOTSH`). 
 
 Then, press *Enter* again and confirm with `yes` to accept the selected CORSIKA program options.
+
+**Please Note**:  
+If you are re-running `coconut`, the settings used for the previous compilation are cached. You can automatically select them by pressing **Enter**.
 
 ## Compilation
 
