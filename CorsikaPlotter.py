@@ -220,6 +220,24 @@ class CorsikaPlotter:
 
         return particle_tracks_df
 
+    def _cartesian_to_polar(self, x, y):
+        """Convert Cartesian coordinates (x, y) to polar coordinates (r, theta)."""
+        r = np.sqrt(x**2 + y**2) 
+        theta = np.arctan2(y, x) 
+        return r, theta
+    
+    def _ring_area(self, r_inner, r_outer):
+        """Calculates the area of a ring using inner and outer diameter
+
+        Args:
+            r_inner (float): Inner diameter of ring
+            r_outer (float): Outer diameter of ring
+
+        Returns:
+            float: Area
+        """        
+        return np.pi*(r_outer**2 - r_inner**2)
+    
     def plot_side_profile(self, ax=None, alpha=0.1, color_dict=None):
         """
         Plots a side profile of the particle tracks with optional color coding.
@@ -349,3 +367,62 @@ class CorsikaPlotter:
         ax.set_aspect("equal")
 
         return ax
+    
+    def plot_ground_photon_density(self, ax=None, nbins = 200, color = 'black'):
+        """Determines and plots the Cherenkov photon density on ground with 
+        respect to the radial distance. 
+
+        Args:
+            ax (matplotlib.axes.Axes, optional): Axis object to plot on. Defaults to None.
+            nbins (int, optional): Number of radial bins. Defaults to 200.
+            color (str, optional): Color of plot. Defaults to 'black'.
+
+        Returns:
+            matplotlib.axes.Axes: The axis containing the plot.
+        """        
+        
+        if ax is None:
+            _, ax = plt.subplots(figsize=(3, 6))
+            
+            
+        # Convert the impact Cartesian coordinates into polar coordinates 
+        impact_r, _ = self._cartesian_to_polar(
+                        self.cherenkov_photons.x_impact_cm * 1e-2,
+                        self.cherenkov_photons.y_impact_cm * 1e-2
+        )
+        
+        # Setup logarithmic bins to calculate the photon density for
+        density_bins = np.logspace(
+                                    np.log10(1),
+                                    np.log10(800), 
+                                    nbins
+        ).reshape((nbins//2,2))
+    
+        # Open up lists to store the output 
+        photon_density = []
+        radial_bin_centre = []
+        
+        # Loop over all ring bins
+        for inner_radius, outer_radius in density_bins:
+            
+            # Calculate ring area and determine number of photons within it
+            area = self._ring_area(inner_radius, outer_radius) 
+            n_photons = ((impact_r < outer_radius) & (impact_r >= inner_radius)).sum()
+            
+            # Calculate photon density
+            photon_density.append(n_photons/area)
+            
+            # Calculate radial centre of the ring bin
+            bin_centre = (inner_radius +  outer_radius)/2.
+            radial_bin_centre.append(bin_centre)
+            
+            
+        plt.plot(radial_bin_centre, photon_density, c = 'black')
+        plt.xlabel('Radial distance [m]')
+        plt.ylabel(r'Photon density [m$^{-2}$]')
+        plt.xscale('log')
+        plt.xlim(10, 1e3)
+        
+        return ax
+            
+        
