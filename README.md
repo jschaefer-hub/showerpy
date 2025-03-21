@@ -4,8 +4,10 @@
 **ShowerPy** is a set of Python classes that provides users with a simple interface to create single-shower CORSIKA simulations, extract full particle track information, and generate shower plots.  
 ![Shower Image](media/shower_plots.png)  
 
-All data is available as pandas DataFrames, allowing you to create custom plots and perform detailed analysis.
+All data is available as pandas DataFrames, allowing you to create custom plots and perform detailed analysis. A quick overview of the workflow is shown below 
 
+![software flowchart](media/software_flowchart.drawio.svg)
+`
 # Attribution 
 The ShowerPy classes use [pyeventio](https://github.com/cta-observatory/pyeventio) and [pycorsikaio](https://github.com/cta-observatory/pycorsikaio) to load the fortran files produced by CORSIKA. Further, the public woodycap installation uses CORSIKA 7.8000 (Released February 2025). For more information visit the [official website](https://www.iap.kit.edu/corsika/99.php). 
 # Getting Started  
