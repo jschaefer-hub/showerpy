@@ -238,6 +238,20 @@ class CorsikaPlotter:
         """        
         return np.pi*(r_outer**2 - r_inner**2)
     
+    def _get_showerstart_height(self):
+        # Identify meaningful shower start for plot via z-height distribution
+        nparticles, hasl = np.histogram(
+            self.particle_tracks["z_start"] * 1e-5, bins=np.arange(0, 40, 1)
+        )
+        
+        # Flip arrays to start from higher altitudes going down
+        nparticles = np.flip(nparticles)
+        hasl = np.flip(hasl)
+        
+        # Begin Plot one step prior to when more than 10 particles are involved
+        shower_start = hasl[np.argmax(nparticles > 10) - 1]
+        return shower_start 
+    
     def plot_side_profile(self, ax=None, alpha=0.1, color_dict=None):
         """
         Plots a side profile of the particle tracks with optional color coding.
@@ -251,17 +265,7 @@ class CorsikaPlotter:
         Returns:
             matplotlib.axes.Axes: The axis containing the plot.
         """
-        # Identify meaningful shower start for plot via z-height distribution
-        nparticles, hasl = np.histogram(
-            self.particle_tracks["z_start"] * 1e-5, bins=np.arange(0, 40, 1)
-        )
-        
-        # Flip arrays to start from higher altitudes going down
-        nparticles = np.flip(nparticles)
-        hasl = np.flip(hasl)
-        
-        # Begin Plot one step prior to when more than 10 particles are involved
-        shower_start = hasl[np.argmax(nparticles > 10) - 1]
+        shower_start = self._get_showerstart_height()
 
         if ax is None:
             _, ax = plt.subplots(figsize=(3, 8))
@@ -425,4 +429,80 @@ class CorsikaPlotter:
         
         return ax
             
+    def plot_particle_height_distribution(self, ax=None, color_dict=None):
         
+        if ax is None:
+            _, ax = plt.subplots(figsize=(7, 4))
+        
+        # Get the height at which the shower started 
+        shower_start = self._get_showerstart_height()
+            
+        legend_handles = []
+        
+        #plot distribution of all particles first
+        n_particles, bins = np.histogram(self.particle_tracks.z_start,
+                                        bins = np.arange(0,shower_start,0.1)*1e5)
+        bin_centres = (bins[:-1]+bins[1:])/2.
+
+        ax.plot(bin_centres *1e-5, n_particles, c = 'black')
+        legend_handles.append(
+            plt.Line2D([0], [0],
+            color='black', 
+            lw=2,
+            label='All particles')
+        )
+        
+        # Now we loop over all of the particle and color combinations that have
+        # been provided and plot them separately
+        
+
+        if color_dict:
+            for particle_name, color in color_dict.items():
+                
+                # In case the name contains more particles i.e electron+positron
+                # We get the subnames
+                subnames = particle_name.replace(' ', '').split('+')
+                    
+                # Stores total number of particles for each color specification
+                all_particles = 0
+                group_name = ''
+                for name in subnames:
+                    
+                    # Yeah ... check if we even have the particle that have been 
+                    # requested
+                    if name not in self.particle_map:
+                        print(f"Warning: Unknown particle type '{name}'.")
+                        raise()
+                    
+                    # Get the CORSIKA ID
+                    particle_id = self.particle_map[name]
+                    
+                    # Select all entries with this particle ID
+                    subset = self.particle_tracks[self.particle_tracks["particle_id"] == particle_id]
+                    
+                    # Create the histogram 
+                    n_particles, bins = np.histogram(subset.z_start,
+                                                    bins = np.arange(0,shower_start,0.1)*1e5
+                    )
+                    
+                    # Add number of particles 
+                    all_particles += n_particles
+                    
+                    group_name += name + 's + '
+                # Now we are done with all subnames and plot things 
+                bin_centres = (bins[:-1]+bins[1:])/2.
+
+                ax.plot(bin_centres *1e-5, all_particles, c = color)
+                    
+                    # Add solid color line for legend
+                legend_handles.append(plt.Line2D([0], [0],
+                                    color=color, 
+                                    lw=2, 
+                                    label=group_name[:-3])
+                )
+            
+        plt.legend(handles=legend_handles)
+        plt.ylabel('Number of particles')
+        plt.xlabel('Height a.s.l [km]')
+        
+        return ax
