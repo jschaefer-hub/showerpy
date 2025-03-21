@@ -417,7 +417,7 @@ class CorsikaPlotter:
             radial_bin_centre.append(bin_centre)
             
             
-        plt.plot(radial_bin_centre, photon_density, c = 'black')
+        plt.plot(radial_bin_centre, photon_density, c = color)
         plt.xlabel('Radial distance [m]')
         plt.ylabel(r'Photon density [m$^{-2}$]')
         plt.xscale('log')
