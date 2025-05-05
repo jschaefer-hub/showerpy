@@ -20,7 +20,7 @@ ECUTS  0.3  0.1  0.020  0.020
 *MUADDI  F
 *MUMULT  T // Additional Muon information
 ELMFLG T T
-ATMOSPHERE  10 T
+{ext_atmosphere}
 *
 OBSLEV {observation_level}
 *ELMFLG T T // NKG/EGS4 options 

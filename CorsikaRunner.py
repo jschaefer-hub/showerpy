@@ -45,7 +45,8 @@ class CorsikaRunner:
             "observation_level": None,
             "zenith_angle": None,
             "seeds": None,
-            "path_output": None
+            "path_output": None,
+            "ext_atmosphere": None
         }
 
         # Mapping between CORSIKA particle ID and particle name
@@ -91,7 +92,8 @@ class CorsikaRunner:
         run_number=1,
         zenith_angle=0 * u.deg,
         random_seeds=True,
-        path_output=None
+        path_output=None,
+        ext_atmosphere=None
     ):
         """
         Configures the simulation parameters for a CORSIKA run.
@@ -107,6 +109,10 @@ class CorsikaRunner:
                 Defaults to `0 * u.deg`.
             random_seeds (bool, optional): If `True`, the showers are generated with random seeds.
                 Defaults to `True`.
+            path_output (str, optional): Path under which the produced simulation files are stored. Defaults to the
+                current script directory.
+            ext_atmosphere (str, optional): External atmospheric profile identifier (i.e atmprof10.dat -> ext_atmosphere='10').
+                Defaults to internal atmosphere (not location specific).
 
         Returns:
             int: Always returns `0` to indicate successful configuration.
@@ -117,6 +123,11 @@ class CorsikaRunner:
         self.current_config["zenith_angle"] = zenith_angle.to(u.deg)
         self.current_config["observation_level"] = observation_level.to(u.cm)
         self.current_config["path_output"] = path_output or os.getcwd()
+        
+        if ext_atmosphere:
+            self.current_config["ext_atmosphere"] = f'ATMOSPHERE  {ext_atmosphere} T'
+        else: 
+            self.current_config["ext_atmosphere"] = '*'
 
         # Generate random seed if enabled
         self.current_config["seeds"] = self._generate_seeds() if random_seeds else "*"
@@ -154,6 +165,7 @@ class CorsikaRunner:
             zenith_angle=self.current_config["zenith_angle"].value,
             observation_level=self.current_config["observation_level"].value,
             output_directory=os.path.join(f'./{self.temp_output_dir}/', "sim_"),
+            ext_atmosphere=self.current_config["ext_atmosphere"],
         )
 
         # Write to the output file
