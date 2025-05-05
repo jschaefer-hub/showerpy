@@ -10,7 +10,7 @@ All data is available as pandas DataFrames, allowing you to create custom plots 
 `
 # Attribution 
 The ShowerPy classes use [pyeventio](https://github.com/cta-observatory/pyeventio) and [pycorsikaio](https://github.com/cta-observatory/pycorsikaio) to load the fortran files produced by CORSIKA. Further, demo install on woodycap uses CORSIKA 7.8000 (Released February 2025). For more information visit the [official website](https://www.iap.kit.edu/corsika/99.php). 
-You can also cite the showerpy releases using the [Zenodo DOI](https://zenodo.org/records/15340975).
+You can also cite the showerpy releases using the [Zenodo DOI](https://doi.org/10.5281/zenodo.15340974).
 # 1. Getting Started  
 
 First, create and activate the `showerpy` mamba environment using the following commands:
