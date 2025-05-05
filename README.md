@@ -80,4 +80,4 @@ Finally, to begin the compilation process select `f` and press *Enter* again.
 To test the successful compilation you can execute the binary `./run/corsika78000Darwin_QGSIII_urqmd`. If you are greeted with the CORSIKA message, everything has compiled successfully. 
 
 ## Atmospheric profile 
-You will also need the atmospheric profile file `atmprof10.dat`. This file is available to [H.E.S.S. members](https://www.mpi-hd.mpg.de/hfm/~bernlohr/HESS/) and [CTA members](https://www.mpi-hd.mpg.de/hfm/CTA/MC/). Please use the standard login.
+You will also need the atmospheric profile file `atmprof10.dat`. This file is available to [H.E.S.S. members](https://www.mpi-hd.mpg.de/hfm/~bernlohr/HESS/) and [CTA members](https://www.mpi-hd.mpg.de/hfm/CTA/MC/).
