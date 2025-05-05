@@ -11,7 +11,7 @@ All data is available as pandas DataFrames, allowing you to create custom plots 
 # Attribution 
 The ShowerPy classes use [pyeventio](https://github.com/cta-observatory/pyeventio) and [pycorsikaio](https://github.com/cta-observatory/pycorsikaio) to load the fortran files produced by CORSIKA. Further, demo install on woodycap uses CORSIKA 7.8000 (Released February 2025). For more information visit the [official website](https://www.iap.kit.edu/corsika/99.php). 
 You can also cite the showerpy releases using the [Zenodo DOI](https://zenodo.org/records/15340975).
-# Getting Started  
+# 1. Getting Started  
 
 First, create and activate the `showerpy` mamba environment using the following commands:
 ```shell 
@@ -20,10 +20,10 @@ mamba activate showerpy
 ```
 Then, open the demo notebook `Demo.ipynb`, which provides an introduction to using ShowerPy.
 
-# Simulating Showers
+# 2. Simulating Showers
 As shown in the demo notebook, the `CorsikaRunner` class is used to generate the necessary simulations. If you’re running the demo on `woodycap5` or `woodycap6`, no additional setup is required, as the CORSIKA executable points to a public installation.
 
-# Compiling CORSIKA 
+# 3. Compiling CORSIKA 
 
 If you want to simulate showers locally, please first [register as a new CORSIKA user](https://www.iap.kit.edu/corsika/79.php). After registering, you will receive login credentials to download CORSIKA. Once downloaded, unpack the archive using:
 
@@ -49,8 +49,8 @@ You will then be prompted for different compile-time options. Select the followi
 2. **High-Energy Hadronic Interaction Model:** `3` (QGSJETIII-01)<br>
 **->** You can also switch to a different model depending on your use case. Please note that when using EPOS, a modification to the input_template is required.
 3. **Low-Energy Hadronic Interaction Model:** `3` (URQMD 1.3cr)
-4. **Detector Geometry:** `2` (non-flat volume detector geometry)
-5. **Date and time routine:** `1` (automatic detection by configure)
+4. **Date and time routine:** `1` (automatic detection by configure)
+5. **Detector Geometry:** `2` (non-flat volume detector geometry)
 
 ## Enabling Additional CORSIKA Program Options
 
@@ -71,7 +71,8 @@ After this, press *Enter* to compile the `plottracks` script (`PLOTSH`).
 Then, press *Enter* again and confirm with `yes` to accept the selected CORSIKA program options.
 
 **Please Note**:  
-If you are re-running `coconut`, the settings used for the previous compilation are cached. You can automatically select them by pressing **Enter**.
+- If you are re-running `coconut`, the settings used for the previous compilation are cached. You can automatically select them by pressing **Enter**.
+- If you want to start fresh, you can disable cached options using `./coconut --no-cached -e`.
 
 ## Compilation
 
@@ -79,5 +80,5 @@ Finally, to begin the compilation process select `f` and press *Enter* again.
 
 To test the successful compilation you can execute the binary `./run/corsika78000Darwin_QGSIII_urqmd`. If you are greeted with the CORSIKA message, everything has compiled successfully. 
 
-## Atmospheric profile 
-You will also need the atmospheric profile file `atmprof10.dat`. This file is available to [H.E.S.S. members](https://www.mpi-hd.mpg.de/hfm/~bernlohr/HESS/) and [CTA members](https://www.mpi-hd.mpg.de/hfm/CTA/MC/).
+# 4. Atmospheric profile 
+By default, the internal atmospheric profile is used. If you want to use an external, site-specific profile, you can specify this when configuring the simulation run (see demo notebook). For [H.E.S.S. members](https://www.mpi-hd.mpg.de/hfm/~bernlohr/HESS/) and [CTA members](https://www.mpi-hd.mpg.de/hfm/CTA/MC/), such files (e.g., `atmprof10.dat`) are provided and are typically based on local balloon flight measurements.
